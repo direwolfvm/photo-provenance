@@ -1,0 +1,82 @@
+{
+  "claim_generator": "PhotoSeal iOS",
+  "claim_generator_info": [
+    {
+      "name": "PhotoSeal",
+      "version": "1.0.0",
+      "icon": {
+        "format": "image/svg+xml",
+        "identifier": "photosel-logo.svg"
+      }
+    }
+  ],
+
+  "title": "IMG_0001",
+  "format": "image/heic",
+
+  "assertions": [
+    {
+      "label": "c2pa.actions",
+      "data": {
+        "actions": [
+          {
+            "action": "c2pa.created",
+            "when": "2025-12-30T20:15:00Z",
+            "softwareAgent": "PhotoSeal/1.0.0 (iOS)"
+          }
+        ]
+      }
+    },
+
+    {
+      "label": "stds.schema-org.CreativeWork",
+      "data": {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": "PhotoSeal Capture",
+        "creator": [
+          { "@type": "Organization", "name": "PhotoSeal" }
+        ]
+      }
+    },
+
+    {
+      "label": "org.photoseal.capture.v1",
+      "data": {
+        "capture": {
+          "device_time": "2025-12-30T15:15:00-05:00",
+          "lens_position": "rear",
+          "exposure": { "iso": 125, "shutter_s": 0.004, "f_number": 1.8 },
+          "location": { "lat": 38.8048, "lon": -77.0469, "accuracy_m": 12.0 }
+        },
+        "binding": {
+          "preferred": "c2pa.hardBinding",
+          "note": "Hard binding is provided by the C2PA manifest store. This object describes local binding inputs only.",
+          "local_canonicalization": {
+            "type": "pixels_v1",
+            "pixel_format": "RGBA8",
+            "color_space": "sRGB",
+            "orientation_applied": true,
+            "width": 4032,
+            "height": 3024,
+            "hash_alg": "SHA-256",
+            "hash_b64": "BASE64_OF_LOCAL_PIXEL_HASH"
+          }
+        },
+        "signer": {
+          "key_origin": "secure_enclave",
+          "public_key_hint": "OPTIONAL_BASE64_OF_PUBLIC_KEY",
+          "key_id": "BASE64URL_SHA256_OF_PUBLIC_KEY"
+        },
+        "privacy": {
+          "location_included": true,
+          "location_policy": "opt_in"
+        }
+      }
+    }
+  ],
+
+  "ingredients": [],
+
+  "ta_url": "https://timestamp.example.com"
+}
