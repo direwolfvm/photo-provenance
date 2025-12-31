@@ -58,6 +58,10 @@ private final class ArchiveBuilder {
                 handle.write(footerData)
             }
         }
-        try? handle.close()
+        if #available(macOS 10.15, *) {
+            try? handle.close()
+        } else {
+            handle.closeFile()
+        }
     }
 }
