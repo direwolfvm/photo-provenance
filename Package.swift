@@ -7,20 +7,23 @@ let package = Package(
     platforms: [
         .iOS(.v17),
     ],
-    dependencies: [
-        .package(url: "https://github.com/contentauth/c2pa-ios.git", from: "0.0.1"),
-    ],
     products: [
         .library(
             name: "PhotoSealCore",
             targets: ["PhotoSealCore"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/contentauth/c2pa-ios.git", from: "0.0.1"),
+    ],
     targets: [
         .target(
             name: "PhotoSealCore",
             dependencies: [
                 .product(name: "C2PA", package: "c2pa-ios"),
+            ],
+            resources: [
+                .process("Resources"),
             ]
         ),
         .testTarget(
