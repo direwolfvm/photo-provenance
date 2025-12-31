@@ -64,7 +64,7 @@ public enum CaptureAssertionValidator {
         }
 
         let requiredKeys = schema?["required"] as? [String] ?? []
-        let payloadKeys = Set(json?.keys ?? [])
+        let payloadKeys = Set((json ?? [:]).keys)
         let missing = requiredKeys.filter { !payloadKeys.contains($0) }
         if !missing.isEmpty {
             throw NSError(domain: "org.photoseal.validation", code: 1, userInfo: [
