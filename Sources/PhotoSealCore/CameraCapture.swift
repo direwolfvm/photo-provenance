@@ -56,7 +56,11 @@ public final class CameraCapture: NSObject {
             throw CameraCaptureError.configurationFailed
         }
         session.addOutput(output)
-        output.isHighResolutionCaptureEnabled = true
+        if #available(iOS 16.0, macOS 13.0, *) {
+            output.maxPhotoDimensions = output.maxPhotoDimensions
+        } else {
+            output.isHighResolutionCaptureEnabled = true
+        }
         session.commitConfiguration()
 
         if enableLocation {
@@ -84,11 +88,16 @@ public final class CameraCapture: NSObject {
     }
 
     public func capturePhoto() async throws -> PhotoCaptureResult {
-        let settings = AVCapturePhotoSettings()
-        settings.isHighResolutionPhotoEnabled = true
-        settings.isAutoStillImageStabilizationEnabled = true
-        if self.output.availablePhotoCodecTypes.contains(.hevc) {
-            settings.codec = .hevc
+        let settings: AVCapturePhotoSettings
+        if output.availablePhotoCodecTypes.contains(.hevc) {
+            settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+        } else {
+            settings = AVCapturePhotoSettings()
+        }
+        if #available(iOS 16.0, macOS 13.0, *) {
+            settings.maxPhotoDimensions = output.maxPhotoDimensions
+        } else {
+            settings.isHighResolutionPhotoEnabled = true
         }
 
         return try await withCheckedThrowingContinuation { continuation in
