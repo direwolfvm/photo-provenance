@@ -3,7 +3,7 @@ import Foundation
 public enum SidecarManager {
     public static func sidecarURL(for assetURL: URL) -> URL {
         let base = assetURL.deletingPathExtension()
-        return base.appendingPathExtension("c2pa")
+        return base.appendingPathExtension("photoseal")
     }
 
     public static func writeSidecar(_ data: Data, for assetURL: URL) throws -> URL {

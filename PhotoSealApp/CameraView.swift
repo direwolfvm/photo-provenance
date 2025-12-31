@@ -50,7 +50,7 @@ final class CameraViewModel: ObservableObject {
     @Published var statusMessage: String?
 
     private let capture = CameraCapture()
-    private let embedder = C2PAEmbedder()
+    private let embedder = PhotoSealManifestEmbedder()
 
     var captureSession: AVCaptureSession {
         capture.captureSession
@@ -81,21 +81,15 @@ final class CameraViewModel: ObservableObject {
                 try? CaptureAssertionValidator.validate(payload: assertion, schemaURL: schemaURL)
             }
 
-            let manifest = try C2PAManifestBuilder.buildManifestDefinition(
+            let manifest = try PhotoSealManifestBuilder.buildManifest(
                 creatorName: "Local User",
-                capturePayload: assertion
-            )
-            let signingOptions = SigningOptions(
-                useTimestamp: notarizeWhenOnline,
+                capturePayload: assertion,
+                notarizationRequested: notarizeWhenOnline,
                 timestampURL: notarizeWhenOnline ? URL(string: "https://timestamp.contentauthenticity.org") : nil
             )
-            let embedResult = try embedder.embedManifest(
-                assetData: result.photoData,
-                manifestDefinition: manifest,
-                signingOptions: signingOptions
-            )
+            let embedResult = try embedder.embedManifest(assetData: result.photoData, manifest: manifest)
 
-            statusMessage = "Captured photo with manifest store (\(embedResult.manifestStore.count) bytes)."
+            statusMessage = "Captured photo with custom manifest (\(embedResult.manifestStore.count) bytes)."
         } catch {
             statusMessage = "Capture failed: \(error.localizedDescription)"
         }
