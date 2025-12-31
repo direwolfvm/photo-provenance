@@ -56,7 +56,7 @@ public final class C2PAEmbedder: C2PAEmbedding {
             timestampURL: signingOptions.timestampURL
         )
         let builder = try Builder(manifestJSON: manifestJSON)
-        let sourceStream = try C2PA.Stream(data: assetData)
+        let sourceStream = try Stream(data: assetData)
         let destinationStream = try InMemoryWriteStream()
         let format = try C2PAFormatResolver.format(for: assetData)
         let manifestStore = try builder.sign(
@@ -116,40 +116,39 @@ private enum C2PAFormatResolver {
 private final class InMemoryWriteStream {
     private(set) var data = Data()
     private var position = 0
-    let stream: C2PA.Stream
+    let stream: Stream
 
     init() throws {
-        stream = try C2PA.Stream(
-            seek: { [weak self] offset, origin in
-                guard let self else { return -1 }
-                switch origin {
-                case .Start:
-                    position = max(0, offset)
-                case .Current:
-                    position = max(0, position + offset)
-                case .End:
-                    position = max(0, data.count + offset)
-                default:
-                    return -1
+        let seek: Stream.Seeker = { [weak self] offset, origin in
+            guard let self else { return -1 }
+            switch origin {
+            case .Start:
+                position = max(0, offset)
+            case .Current:
+                position = max(0, position + offset)
+            case .End:
+                position = max(0, data.count + offset)
+            default:
+                return -1
+            }
+            return position
+        }
+        let write: Stream.Writer = { [weak self] buffer, count in
+            guard let self else { return -1 }
+            let bytes = Data(bytes: buffer, count: count)
+            if position == data.count {
+                data.append(bytes)
+            } else {
+                if position + count > data.count {
+                    data.append(Data(count: position + count - data.count))
                 }
-                return position
-            },
-            write: { [weak self] (buffer: UnsafeRawPointer, count: Int) in
-                guard let self else { return -1 }
-                let bytes = Data(bytes: buffer, count: count)
-                if position == data.count {
-                    data.append(bytes)
-                } else {
-                    if position + count > data.count {
-                        data.append(Data(count: position + count - data.count))
-                    }
-                    data.replaceSubrange(position..<(position + count), with: bytes)
-                }
-                position += count
-                return count
-            },
-            flush: { 0 }
-        )
+                data.replaceSubrange(position..<(position + count), with: bytes)
+            }
+            position += count
+            return count
+        }
+        let flush: Stream.Flusher = { 0 }
+        stream = try Stream(seek: seek, write: write, flush: flush)
     }
 }
 #endif
