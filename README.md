@@ -74,19 +74,21 @@ Any C2PA compatible verifier can validate PhotoSeal output.
 
 ```
 PhotoSeal/
-├── PhotoSealApp/        SwiftUI application
-├── PhotoSealCore/       Core signing and provenance logic
-│   ├── CameraCapture.swift
-│   ├── PixelCanonicalizer.swift
-│   ├── CaptureAssertion.swift
-│   ├── C2PAManifestBuilder.swift
-│   ├── C2PAEmbedder.swift
-│   ├── SidecarManager.swift
-│   └── Verifier.swift
+├── PhotoSealApp/                 SwiftUI application
+├── Sources/
+│   └── PhotoSealCore/            Core signing and provenance logic
+│       ├── CameraCapture.swift
+│       ├── PixelCanonicalizer.swift
+│       ├── CaptureAssertion.swift
+│       ├── C2PAManifestBuilder.swift
+│       ├── C2PAEmbedder.swift
+│       ├── SidecarManager.swift
+│       └── Verifier.swift
 ├── Schemas/
 │   ├── org.photoseal.capture.v1.schema.json
 │   └── PhotoSeal.c2pa-manifest-definition.v1.json
 ├── Tests/
+│   └── PhotoSealCoreTests/
 └── README.md
 ```
 
@@ -161,11 +163,11 @@ Requirements:
 * iOS 17+
 * Swift 5.9+
 
-Clone and open the project in Xcode:
+Clone and open the Swift package in Xcode:
 
 ```
 git clone https://github.com/your-org/photoseal.git
-open PhotoSeal.xcodeproj
+open Package.swift
 ```
 
 No backend services are required.
@@ -183,4 +185,3 @@ This project is experimental and intended for research and early adoption use ca
 * Coalition for Content Provenance and Authenticity (C2PA)
 * Content Authenticity Initiative (CAI)
 * Apple AVFoundation and CryptoKit teams
-
