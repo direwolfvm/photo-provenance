@@ -56,7 +56,7 @@ public final class C2PAEmbedder: C2PAEmbedding {
             timestampURL: signingOptions.timestampURL
         )
         let builder = try Builder(manifestJSON: manifestJSON)
-        let sourceStream = try Stream(data: assetData)
+        let sourceStream = try C2PA.Stream(data: assetData)
         let destinationStream = try InMemoryWriteStream()
         let format = try C2PAFormatResolver.format(for: assetData)
         let manifestStore = try builder.sign(
@@ -116,19 +116,19 @@ private enum C2PAFormatResolver {
 private final class InMemoryWriteStream {
     private(set) var data = Data()
     private var position = 0
-    let stream: Stream
+    let stream: C2PA.Stream
 
     init() throws {
-        stream = try Stream(
+        stream = try C2PA.Stream(
             read: nil,
             seek: { [weak self] offset, origin in
                 guard let self else { return -1 }
                 switch origin {
-                case Start:
+                case .Start:
                     position = max(0, offset)
-                case Current:
+                case .Current:
                     position = max(0, position + offset)
-                case End:
+                case .End:
                     position = max(0, data.count + offset)
                 default:
                     return -1
