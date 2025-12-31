@@ -65,6 +65,7 @@ PhotoSeal uses the C2PA (Coalition for Content Provenance and Authenticity) stan
 * Each photo contains a signed C2PA claim
 * Standard assertions are included (`c2pa.actions`, `schema.org`)
 * Capture specific metadata is stored in a custom assertion namespace
+* A custom manifest definition drives which assertions are emitted
 * Required C2PA hard binding protects the asset
 * Manifests can be embedded or stored as `.c2pa` sidecars
 
@@ -84,9 +85,8 @@ PhotoSeal/
 │       ├── C2PAEmbedder.swift
 │       ├── SidecarManager.swift
 │       └── Verifier.swift
-├── Schemas/
-│   ├── org.photoseal.capture.v1.schema.json
-│   └── PhotoSeal.c2pa-manifest-definition.v1.json
+├── PhotoSeal.c2pa-manifest-definition.v1.json
+├── org.photoseal.capture.v1.schema.json
 ├── Tests/
 │   └── PhotoSealCoreTests/
 └── README.md
@@ -101,7 +101,8 @@ PhotoSeal/
    The image is decoded, orientation applied, converted to sRGB RGBA8, and hashed.
 
 3. Manifest construction
-   A C2PA manifest definition is created containing:
+   A C2PA manifest definition is created from
+   `PhotoSeal.c2pa-manifest-definition.v1.json`, containing:
 
    * Standard C2PA assertions
    * A PhotoSeal custom capture assertion
