@@ -1,3 +1,4 @@
+import AVFoundation
 import Combine
 import CoreLocation
 import Photos
@@ -11,6 +12,15 @@ struct CameraView: View {
         VStack(spacing: 20) {
             Text("PhotoSeal")
                 .font(.largeTitle)
+
+            CameraPreview(session: viewModel.captureSession)
+                .frame(maxWidth: .infinity)
+                .frame(height: 320)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(.secondary.opacity(0.2))
+                )
 
             Toggle("Include Location", isOn: $viewModel.includeLocation)
             Toggle("Notarize when online", isOn: $viewModel.notarizeWhenOnline)
@@ -43,6 +53,10 @@ final class CameraViewModel: ObservableObject {
 
     private let cameraCapture = CameraCapture()
     private let embedder = C2PAEmbedder()
+
+    var captureSession: AVCaptureSession {
+        cameraCapture.captureSession
+    }
 
     func start() {
         do {
@@ -89,3 +103,78 @@ final class CameraViewModel: ObservableObject {
         }
     }
 }
+
+private struct CameraPreview: View {
+    let session: AVCaptureSession
+
+    var body: some View {
+        CameraPreviewLayerView(session: session)
+            .aspectRatio(3 / 4, contentMode: .fill)
+    }
+}
+
+#if os(iOS)
+private struct CameraPreviewLayerView: UIViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeUIView(context: Context) -> PreviewView {
+        let view = PreviewView()
+        view.videoPreviewLayer.session = session
+        view.videoPreviewLayer.videoGravity = .resizeAspectFill
+        return view
+    }
+
+    func updateUIView(_ uiView: PreviewView, context: Context) {
+        uiView.videoPreviewLayer.session = session
+    }
+
+    final class PreviewView: UIView {
+        override class var layerClass: AnyClass {
+            AVCaptureVideoPreviewLayer.self
+        }
+
+        var videoPreviewLayer: AVCaptureVideoPreviewLayer {
+            guard let previewLayer = layer as? AVCaptureVideoPreviewLayer else {
+                return AVCaptureVideoPreviewLayer()
+            }
+            return previewLayer
+        }
+    }
+}
+#elseif os(macOS)
+private struct CameraPreviewLayerView: NSViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeNSView(context: Context) -> PreviewView {
+        let view = PreviewView()
+        view.videoPreviewLayer.session = session
+        view.videoPreviewLayer.videoGravity = .resizeAspectFill
+        return view
+    }
+
+    func updateNSView(_ nsView: PreviewView, context: Context) {
+        nsView.videoPreviewLayer.session = session
+    }
+
+    final class PreviewView: NSView {
+        override init(frame frameRect: NSRect) {
+            super.init(frame: frameRect)
+            wantsLayer = true
+            layer = AVCaptureVideoPreviewLayer()
+        }
+
+        required init?(coder: NSCoder) {
+            super.init(coder: coder)
+            wantsLayer = true
+            layer = AVCaptureVideoPreviewLayer()
+        }
+
+        var videoPreviewLayer: AVCaptureVideoPreviewLayer {
+            guard let previewLayer = layer as? AVCaptureVideoPreviewLayer else {
+                return AVCaptureVideoPreviewLayer()
+            }
+            return previewLayer
+        }
+    }
+}
+#endif
