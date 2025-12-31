@@ -13,15 +13,11 @@ let package = Package(
             targets: ["PhotoSealCore"]
         ),
     ],
-    dependencies: [
-        .package(url: "https://github.com/contentauth/c2pa-ios.git", from: "0.0.1"),
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: "PhotoSealCore",
-            dependencies: [
-                .product(name: "C2PA", package: "c2pa-ios"),
-            ],
+            dependencies: [],
             resources: [
                 .process("Resources"),
             ]

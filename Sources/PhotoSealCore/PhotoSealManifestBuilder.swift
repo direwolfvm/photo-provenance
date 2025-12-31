@@ -1,32 +1,72 @@
 import Foundation
 
-public struct ManifestDefinition: Codable, Sendable {
+public struct PhotoSealManifest: Codable, Sendable {
+    public struct Generator: Codable, Sendable {
+        public let name: String
+        public let version: String
+        public let icon: String?
+    }
+
+    public struct AssetBinding: Codable, Sendable {
+        public let hashAlgorithm: String
+        public let hashValue: String
+        public let width: Int
+        public let height: Int
+        public let source: String
+
+        enum CodingKeys: String, CodingKey {
+            case hashAlgorithm = "hash_algorithm"
+            case hashValue = "hash_value"
+            case width
+            case height
+            case source
+        }
+    }
+
+    public struct Notarization: Codable, Sendable {
+        public let requested: Bool
+        public let timestampURL: String?
+
+        enum CodingKeys: String, CodingKey {
+            case requested
+            case timestampURL = "timestamp_url"
+        }
+    }
+
     public struct Assertion: Codable, Sendable {
         public let label: String
         public let data: [String: AnyCodable]
         public let kind: String?
     }
 
-    public let claimGenerator: String
-    public let claimGeneratorInfo: [String: String]
+    public let manifestVersion: String
+    public let created: String
+    public let generator: Generator
+    public let assetBinding: AssetBinding
     public let assertions: [Assertion]
+    public let notarization: Notarization?
 
     enum CodingKeys: String, CodingKey {
-        case claimGenerator = "claim_generator"
-        case claimGeneratorInfo = "claim_generator_info"
+        case manifestVersion = "manifest_version"
+        case created
+        case generator
+        case assetBinding = "asset_binding"
         case assertions
+        case notarization
     }
 }
 
-public enum C2PAManifestBuilder {
-    public static func buildManifestDefinition(
+public enum PhotoSealManifestBuilder {
+    public static func buildManifest(
         creatorName: String,
-        capturePayload: CaptureAssertionPayload
-    ) throws -> ManifestDefinition {
+        capturePayload: CaptureAssertionPayload,
+        notarizationRequested: Bool,
+        timestampURL: URL?
+    ) throws -> PhotoSealManifest {
         let createdAction: [String: AnyCodable] = [
             "actions": .array([
                 .dictionary([
-                    "action": .string("c2pa.created"),
+                    "action": .string("photoseal.created"),
                     "when": .string(capturePayload.deviceTime)
                 ])
             ])
@@ -43,30 +83,46 @@ public enum C2PAManifestBuilder {
 
         let captureData = try payloadDictionary(from: capturePayload)
 
-        return ManifestDefinition(
-            claimGenerator: "PhotoSeal iOS",
-            claimGeneratorInfo: [
-                "name": "PhotoSeal",
-                "version": "0.1",
-                "icon": "app://photoseal"
-            ],
+        let assetBinding = PhotoSealManifest.AssetBinding(
+            hashAlgorithm: capturePayload.pixelHash.algorithm,
+            hashValue: capturePayload.pixelHash.value,
+            width: capturePayload.pixelHash.width,
+            height: capturePayload.pixelHash.height,
+            source: "pixel_hash_v1"
+        )
+
+        let notarization = PhotoSealManifest.Notarization(
+            requested: notarizationRequested,
+            timestampURL: timestampURL?.absoluteString
+        )
+
+        return PhotoSealManifest(
+            manifestVersion: "photoseal.manifest.v1",
+            created: capturePayload.deviceTime,
+            generator: PhotoSealManifest.Generator(
+                name: "PhotoSeal iOS",
+                version: "0.1",
+                icon: "app://photoseal"
+            ),
+            assetBinding: assetBinding,
             assertions: [
-                ManifestDefinition.Assertion(
-                    label: "c2pa.actions",
+                PhotoSealManifest.Assertion(
+                    label: "photoseal.actions",
                     data: createdAction,
-                    kind: "c2pa.actions"
+                    kind: "photoseal.actions"
                 ),
-                ManifestDefinition.Assertion(
-                    label: "stds.schema-org.CreativeWork",
+                PhotoSealManifest.Assertion(
+                    label: "photoseal.schema-org.CreativeWork",
                     data: creativeWork,
-                    kind: "stds.schema-org.CreativeWork"
+                    kind: "schema-org.CreativeWork"
                 ),
-                ManifestDefinition.Assertion(
+                PhotoSealManifest.Assertion(
                     label: "org.photoseal.capture.v1",
                     data: captureData,
                     kind: "org.photoseal.capture.v1"
                 )
-            ]
+            ],
+            notarization: notarization
         )
     }
 

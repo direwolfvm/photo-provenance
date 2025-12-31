@@ -1,9 +1,5 @@
 import Foundation
 
-#if canImport(C2PA)
-import C2PA
-#endif
-
 public struct VerificationSummary: Sendable {
     public let signatureValid: Bool
     public let contentBindingValid: Bool
@@ -25,20 +21,27 @@ public final class VerifierUIAdapter: VerificationProviding {
     public init() {}
 
     public func verify(assetData: Data, sidecarData: Data?) throws -> VerificationSummary {
-        #if canImport(C2PA)
-        let result = try C2PAVerifier.verify(assetData: assetData, sidecarData: sidecarData)
-        let signatureValid = result.signatureStatus == .valid
-        let contentBindingValid = result.bindingStatus == .valid
-        let timestampPresent = result.timestampStatus == .present
+        guard let sidecarData else {
+            throw VerifierUIAdapterError.verificationFailed
+        }
+
+        let decoder = JSONDecoder()
+        let manifest = try decoder.decode(PhotoSealManifest.self, from: sidecarData)
+        let assetHash = try PixelCanonicalizer.canonicalPixelHash(imageData: assetData)
+        let contentBindingValid = assetHash.base64 == manifest.assetBinding.hashValue
+            && assetHash.width == manifest.assetBinding.width
+            && assetHash.height == manifest.assetBinding.height
+        let timestampPresent = manifest.notarization?.requested ?? false
+        guard let rawJSON = String(data: sidecarData, encoding: .utf8) else {
+            throw VerifierUIAdapterError.verificationFailed
+        }
+
         return VerificationSummary(
-            signatureValid: signatureValid,
+            signatureValid: false,
             contentBindingValid: contentBindingValid,
             timestampPresent: timestampPresent,
-            activeManifestLabel: result.activeManifestLabel,
-            rawJSON: result.json
+            activeManifestLabel: manifest.manifestVersion,
+            rawJSON: rawJSON
         )
-        #else
-        throw VerifierUIAdapterError.sdkUnavailable
-        #endif
     }
 }
