@@ -35,6 +35,10 @@ public final class CameraCapture: NSObject {
         super.init()
     }
 
+    public var captureSession: AVCaptureSession {
+        session
+    }
+
     public func configure(enableLocation: Bool) throws {
         session.beginConfiguration()
         session.sessionPreset = .photo
