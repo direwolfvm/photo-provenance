@@ -161,11 +161,11 @@ Requirements:
 * iOS 17+
 * Swift 5.9+
 
-Clone and open the Swift package in Xcode:
+Clone and open the project in Xcode:
 
 ```
 git clone https://github.com/your-org/photoseal.git
-open Package.swift
+open PhotoSeal.xcodeproj
 ```
 
 No backend services are required.
@@ -183,3 +183,4 @@ This project is experimental and intended for research and early adoption use ca
 * Coalition for Content Provenance and Authenticity (C2PA)
 * Content Authenticity Initiative (CAI)
 * Apple AVFoundation and CryptoKit teams
+
