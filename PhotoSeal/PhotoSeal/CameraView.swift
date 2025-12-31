@@ -1,6 +1,8 @@
-import SwiftUI
+import Combine
 import CoreLocation
 import Photos
+import PhotoSealCore
+import SwiftUI
 
 struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
@@ -14,7 +16,7 @@ struct CameraView: View {
             Toggle("Notarize when online", isOn: $viewModel.notarizeWhenOnline)
 
             Button(action: {
-                Task { await viewModel.capture() }
+                Task { await viewModel.capturePhoto() }
             }) {
                 Text(viewModel.isCapturing ? "Capturing..." : "Capture")
             }
@@ -39,28 +41,28 @@ final class CameraViewModel: ObservableObject {
     @Published var isCapturing = false
     @Published var statusMessage: String?
 
-    private let capture = CameraCapture()
+    private let cameraCapture = CameraCapture()
     private let embedder = C2PAEmbedder()
 
     func start() {
         do {
-            try capture.configure(enableLocation: includeLocation)
-            capture.start()
+            try cameraCapture.configure(enableLocation: includeLocation)
+            cameraCapture.start()
         } catch {
             statusMessage = "Camera configuration failed: \(error.localizedDescription)"
         }
     }
 
     func stop() {
-        capture.stop()
+        cameraCapture.stop()
     }
 
-    func capture() async {
+    func capturePhoto() async {
         isCapturing = true
         defer { isCapturing = false }
 
         do {
-            let result = try await capture.capturePhoto()
+            let result = try await cameraCapture.capturePhoto()
             let pixelHash = try PixelCanonicalizer.canonicalPixelHash(imageData: result.photoData)
             let assertion = CaptureAssertionPayload(metadata: result.metadata, pixelHash: pixelHash)
             if let schemaURL = Bundle.main.url(forResource: "org.photoseal.capture.v1.schema", withExtension: "json") {
