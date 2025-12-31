@@ -21,6 +21,7 @@ public enum CameraCaptureError: Error {
     case captureFailed
 }
 
+@available(macOS 10.15, *)
 public final class CameraCapture: NSObject {
     private let session = AVCaptureSession()
     private let output = AVCapturePhotoOutput()
@@ -98,6 +99,7 @@ public final class CameraCapture: NSObject {
     }
 }
 
+@available(macOS 10.15, *)
 extension CameraCapture: AVCapturePhotoCaptureDelegate {
     public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error {
