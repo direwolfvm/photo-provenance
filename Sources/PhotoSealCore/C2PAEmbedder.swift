@@ -7,6 +7,11 @@ import C2PA
 public struct SigningOptions: Sendable {
     public let useTimestamp: Bool
     public let timestampURL: URL?
+
+    public init(useTimestamp: Bool, timestampURL: URL?) {
+        self.useTimestamp = useTimestamp
+        self.timestampURL = timestampURL
+    }
 }
 
 public struct EmbedResult: Sendable {
